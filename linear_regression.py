@@ -12,22 +12,20 @@ def predict(X, w, b):
 def loss(X, Y, w, b):
     return np.average((predict(X, w, b) - Y) ** 2)
 
+def gradient(X, Y, w, b):
+        w_gradient = 2 * np.average(X * (predict(X, w, b) - Y))
+        b_gradient = 2 * np.average(predict(X, w, b) - Y)
+        return (w_gradient, b_gradient)
+
 
 def train(X, Y, iterations, lr):
     w = b = 0
+
     for i in range(iterations):
-        current_loss = loss(X, Y, w, b)
-        print("Iteration %4d => Loss: %.6f" % (i, current_loss))
+        print("Iteration %4d => Loss: %.6f" % (i, loss(X, Y, w, b)))
 
-        if loss(X, Y, w + lr, b) < current_loss:
-            w += lr
-        elif loss(X, Y, w - lr, b) < current_loss:
-            w -= lr
-        elif loss(X, Y, w, b + lr) < current_loss:
-            b += lr
-        elif loss(X, Y, w, b - lr) < current_loss:
-            b -= lr
-        else:
-            return w, b
-
-    raise Exception("Couldn't converge within %d iterations" % iterations)
+        w_gradient, b_gradient = gradient(X, Y, w, b)
+        w -= w_gradient * lr
+        b -= b_gradient * lr
+        
+    return w, b
