@@ -2,30 +2,34 @@ import numpy as np
 
 
 # START:predict
-def predict(X, w):
-    return X * w
+def predict(X, w, b):
+    return X * w + b
 # END:predict
 
 
 # START:loss
-def loss(X, Y, w):
-    return np.average((predict(X, w) - Y) ** 2)
+def loss(X, Y, w, b):
+    return np.average((predict(X, w, b) - Y) ** 2)
 # END:loss
 
 
 # START:train
 def train(X, Y, iterations, lr):
-    w = 0
+    w = b = 0
     for i in range(iterations):
-        current_loss = loss(X, Y, w)
+        current_loss = loss(X, Y, w, b)
         print("Iteration %4d => Loss: %.6f" % (i, current_loss))
 
-        if loss(X, Y, w + lr) < current_loss:
+        if loss(X, Y, w + lr, b) < current_loss:
             w += lr
-        elif loss(X, Y, w - lr) < current_loss:
+        elif loss(X, Y, w - lr, b) < current_loss:
             w -= lr
+        elif loss(X, Y, w, b + lr) < current_loss:
+            b += lr
+        elif loss(X, Y, w, b - lr) < current_loss:
+            b -= lr
         else:
-            return w
+            return w, b
 
     raise Exception("Couldn't converge within %d iterations" % iterations)
 # END:train
@@ -36,11 +40,11 @@ def train(X, Y, iterations, lr):
 X, Y = np.loadtxt("pizza.txt", skiprows=1, unpack=True)
 
 # Train the system
-w = train(X, Y, iterations=10000, lr=0.01)
-print("\nw=%.3f" % w)
+w, b = train(X, Y, iterations=10000, lr=0.01)
+print("\nw=%.3f, b=%.3f" % (w, b))
 
 # Predict the number of pizzas
-print("Prediction: x=%d => y=%.2f" % (20, predict(20, w)))
+print("Prediction: x=%d => y=%.2f" % (20, predict(20, w, b)))
 # END:main
 
 # Plot the chart
@@ -56,5 +60,5 @@ plt.ylabel("Pizzas", fontsize=30)
 x_edge, y_edge = 50, 50
 plt.axis([0, x_edge, 0, y_edge])
 plt.plot(X, Y, "bo")
-plt.plot([0, x_edge], [0, predict(x_edge, w)], linewidth=1.0, color="r")
+plt.plot([0, x_edge], [b, predict(x_edge, w, b)], linewidth=1.0, color="r")
 plt.show()
