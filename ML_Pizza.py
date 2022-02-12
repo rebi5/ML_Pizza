@@ -1,16 +1,60 @@
 import numpy as np
+
+
+# START:predict
+def predict(X, w):
+    return X * w
+# END:predict
+
+
+# START:loss
+def loss(X, Y, w):
+    return np.average((predict(X, w) - Y) ** 2)
+# END:loss
+
+
+# START:train
+def train(X, Y, iterations, lr):
+    w = 0
+    for i in range(iterations):
+        current_loss = loss(X, Y, w)
+        print("Iteration %4d => Loss: %.6f" % (i, current_loss))
+
+        if loss(X, Y, w + lr) < current_loss:
+            w += lr
+        elif loss(X, Y, w - lr) < current_loss:
+            w -= lr
+        else:
+            return w
+
+    raise Exception("Couldn't converge within %d iterations" % iterations)
+# END:train
+
+
+# START:main
+# Import the dataset
+X, Y = np.loadtxt("pizza.txt", skiprows=1, unpack=True)
+
+# Train the system
+w = train(X, Y, iterations=10000, lr=0.01)
+print("\nw=%.3f" % w)
+
+# Predict the number of pizzas
+print("Prediction: x=%d => y=%.2f" % (20, predict(20, w)))
+# END:main
+
+# Plot the chart
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-sns.set()									# Aktiviert Seaborn
+sns.set()
 
-plt.axis([0, 50, 0, 50])					# Skaliert Achsen (0 bis 50)
-plt.xticks(fontsize=15)						# Legt Teilstriche der x-Achse fest
-plt.yticks(fontsize=15)						# Legt Teilstriche der y-Achse fest
-plt.xlabel("Reservations", fontsize=30)		# Legt Beschriftung der x-Achse fest
-plt.ylabel("Pizzas", fontsize=30)			# Legt Beschriftung der y-Achse fest
-
-X, Y = np.loadtxt("pizza.txt", skiprows=1, unpack=True) # L�dt Daten
-
-plt.plot(X, Y, "r+")						# Stellt Daten im Diagramm dar
-plt.show()									# Zeigt das Diagramm an
+plt.xticks(fontsize=15)
+plt.yticks(fontsize=15)
+plt.xlabel("Reservations", fontsize=30)
+plt.ylabel("Pizzas", fontsize=30)
+x_edge, y_edge = 50, 50
+plt.axis([0, x_edge, 0, y_edge])
+plt.plot(X, Y, "bo")
+plt.plot([0, x_edge], [0, predict(x_edge, w)], linewidth=1.0, color="r")
+plt.show()
